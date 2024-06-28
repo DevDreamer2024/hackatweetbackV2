@@ -18,16 +18,17 @@ router.post('/signup', (req, res) => {
   User.findOne({ username: req.body.username }).then(data => {
     if (data === null) {
       const hash = bcrypt.hashSync(req.body.password, 10);
+      const token = uid2(32);
 
       const newUser = new User({
         name : req.body.name,
         username: req.body.username,
         password: hash,
-        token: uid2(32),
+        token: token,
       });
 
-      newUser.save().then(newDoc => {
-        res.json({ result: true, data: {name : newDoc.name, username : newDoc.username, token : newDoc.token} });
+      newUser.save().then(data => {
+        res.json({ result: true, name : data.name, username : data.username, token : data.token});
       });
     } else {
       // User already exists in database
@@ -45,6 +46,7 @@ router.post('/signin', (req, res) => {
   User.findOne({ username: req.body.username }).then(data => {
     if (data && bcrypt.compareSync(req.body.password, data.password)) {
       res.json({ result: true, data: {name : data.name, username : data.username, token : data.token} });
+      console.log('user found' , data)
     } else {
       res.json({ result: false, error: 'User not found or wrong password' });
     }
